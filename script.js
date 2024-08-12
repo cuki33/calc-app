@@ -15,32 +15,48 @@ const clearButton = document.querySelector('.clear');
 // Add event listeners for number buttons
 numberButtons.forEach(button => {
     button.addEventListener('click', () => {
-        if (shouldResetDisplay) {
-            resetDisplay();
-        }
-        appendNumber(button.textContent);
+        handleNumber(button.textContent);
     });
 });
 
 // Add event listeners for operator buttons
 operatorButtons.forEach(button => {
     button.addEventListener('click', () => {
-        if (currentOperator && firstNumber !== null) {
-            // Calculate the result of the previous operation
-            secondNumber = parseFloat(display.textContent);
-            firstNumber = operate(currentOperator, firstNumber, secondNumber);
-            display.textContent = roundResult(firstNumber);
-        } else {
-            // Set the first number
-            firstNumber = parseFloat(display.textContent);
-        }
-        currentOperator = button.textContent;
-        shouldResetDisplay = true;
+        handleOperator(button.textContent);
     });
 });
 
 // Event listener for equal button
-equalButton.addEventListener('click', () => {
+equalButton.addEventListener('click', handleEqual);
+
+// Event listener for clear button
+clearButton.addEventListener('click', clear);
+
+// Function to handle number input
+function handleNumber(number) {
+    if (shouldResetDisplay) {
+        resetDisplay();
+    }
+    appendNumber(number);
+}
+
+// Function to handle operator input
+function handleOperator(operator) {
+    if (currentOperator && firstNumber !== null) {
+        // Calculate the result of the previous operation
+        secondNumber = parseFloat(display.textContent);
+        firstNumber = operate(currentOperator, firstNumber, secondNumber);
+        display.textContent = roundResult(firstNumber);
+    } else {
+        // Set the first number
+        firstNumber = parseFloat(display.textContent);
+    }
+    currentOperator = operator;
+    shouldResetDisplay = true;
+}
+
+// Function to handle equal button
+function handleEqual() {
     if (currentOperator && firstNumber !== null) {
         secondNumber = parseFloat(display.textContent);
         const result = operate(currentOperator, firstNumber, secondNumber);
@@ -49,10 +65,7 @@ equalButton.addEventListener('click', () => {
         currentOperator = ''; // Reset operator
     }
     shouldResetDisplay = true;
-});
-
-// Event listener for clear button
-clearButton.addEventListener('click', clear);
+}
 
 // Function to append number to display
 function appendNumber(number) {
@@ -127,3 +140,21 @@ function multiply(a, b) {
 function divide(a, b) {
     return a / b;
 }
+
+// Add keyboard support
+window.addEventListener('keydown', function(event) {
+    const key = event.key;
+
+    if (!isNaN(key)) { // If the key is a number
+        handleNumber(key);
+    } else if (key === '+' || key === '-' || key === '*' || key === '/') { // If the key is an operator
+        handleOperator(key);
+    } else if (key === 'Enter' || key === '=') { // If the key is Enter or =
+        event.preventDefault(); // Prevent the form submission if Enter is pressed
+        handleEqual();
+    } else if (key === 'Backspace') { // If the key is Backspace (acts as clear)
+        clear();
+    } else if (key === 'Escape') { // If the key is Escape (acts as clear)
+        clear();
+    }
+});
